@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#176b45">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="La Gustosa">
+<title>La Gustosa · Pedidos</title>
+<style>
+:root{--green:#176b45;--green2:#e7f3eb;--ink:#202522;--muted:#68736c;--line:#dce4de;--bg:#f5f7f5;--red:#a33131}
+*{box-sizing:border-box}body{margin:0;font:16px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--green);color:white;padding:18px 16px 14px;position:sticky;top:0;z-index:4;box-shadow:0 2px 8px #0002}
+.brand{font-size:22px;font-weight:800;letter-spacing:.2px}.sub{font-size:12px;opacity:.9;margin-top:2px}
+nav{display:flex;gap:7px;overflow:auto;padding:10px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:74px;z-index:3}
+nav button{white-space:nowrap;border:1px solid var(--line);background:white;border-radius:999px;padding:9px 12px;color:var(--ink);font-weight:650}
+nav button.active{background:var(--green);color:#fff;border-color:var(--green)}
+main{max-width:760px;margin:auto;padding:14px 12px 88px}.panel{display:none}.panel.active{display:block}
+h2{font-size:21px;margin:8px 0 12px}h3{font-size:16px;margin:12px 0 8px}
+.card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px;margin:10px 0;box-shadow:0 1px 2px #00005}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:var(--green2);border-radius:12px;padding:13px}.stat strong{font-size:23px;display:block}.stat span{font-size:12px;color:var(--muted)}
+label{font-size:13px;font-weight:700;display:block;margin:10px 0 5px}input,select,textarea{width:100%;font:inherit;border:1px solid #cbd6ce;border-radius:10px;padding:11px;background:#fff;color:var(--ink)}textarea{min-height:70px;resize:vertical}
+button{font:inherit;cursor:pointer}.btn{border:0;border-radius:10px;padding:11px 14px;background:var(--green);color:#fff;font-weight:750}.btn.secondary{background:#edf2ee;color:var(--ink);border:1px solid var(--line)}.btn.danger{background:#fff0f0;color:var(--red);border:1px solid #f0cccc}.btn.small{padding:7px 10px;font-size:13px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.muted{color:var(--muted);font-size:13px}.item{padding:11px 0;border-bottom:1px solid var(--line)}.item:last-child{border-bottom:0}.item-title{font-weight:750}.price{font-weight:800;color:var(--green)}.empty{padding:20px;text-align:center;color:var(--muted)}.pill{display:inline-block;border-radius:999px;background:var(--green2);padding:4px 8px;font-size:12px}.total{font-size:25px;font-weight:850;color:var(--green)}.lineitem{display:grid;grid-template-columns:1fr 76px 100px;gap:7px;align-items:center;margin:8px 0}.lineitem input{padding:8px}.lineitem .prodname{font-size:13px;font-weight:650}.receipt{white-space:pre-wrap;background:#fbfcfb;border:1px dashed #aebbb1;padding:14px;border-radius:10px;font-family:ui-monospace,monospace;font-size:13px}.hint{font-size:12px;color:var(--muted);line-height:1.45}.search{margin-bottom:8px}
+@media(max-width:420px){.lineitem{grid-template-columns:1fr 62px 88px}.lineitem .prodname{font-size:12px}.grid{gap:8px}}
+</style>
+</head>
+<body>
+<header><div class="brand">🥫 La Gustosa</div><div class="sub">Pedidos · Clientes · Visitas — datos guardados en este dispositivo</div></header>
+<nav id="nav">
+<button class="active" data-tab="inicio">Inicio</button><button data-tab="pedido">Nuevo pedido</button><button data-tab="productos">Productos</button><button data-tab="clientes">Clientes</button><button data-tab="historial">Historial</button><button data-tab="ruta">Ruta de visitas</button>
+</nav>
+<main>
+<section class="panel active" id="inicio">
+<h2>Resumen</h2>
+<div class="grid"><div class="stat"><strong id="statClients">0</strong><span>Clientes guardados</span></div><div class="stat"><strong id="statProducts">0</strong><span>Productos activos</span></div><div class="stat"><strong id="statOrders">0</strong><span>Pedidos guardados</span></div><div class="stat"><strong id="statSales">$0</strong><span>Total de pedidos</span></div></div>
+<div class="card"><h3>Accesos rápidos</h3><div class="actions"><button class="btn" data-go="pedido">＋ Tomar pedido</button><button class="btn secondary" data-go="clientes">＋ Agregar cliente</button><button class="btn secondary" data-go="ruta">Organizar visitas</button></div></div>
+<div class="card"><h3>Importante</h3><p class="hint">Esta primera versión guarda la información en el almacenamiento del navegador de este teléfono. No borres los datos del navegador. Usa “Copia de seguridad” periódicamente para exportar tus datos y poder recuperarlos.</p><div class="actions"><button class="btn secondary" id="exportBtn">Copia de seguridad</button><label class="btn secondary" style="margin:0">Restaurar copia<input id="importFile" type="file" accept="application/json" hidden></label></div></div>
+</section>
+
+<section class="panel" id="productos">
+<h2>Productos y precios</h2>
+<div class="card"><h3 id="productFormTitle">Agregar producto</h3><input id="productId" type="hidden"><label>Nombre del producto</label><input id="productName" placeholder="Ej. Salsa de tomate 4000 g"><label>Precio de venta (COP)</label><input id="productPrice" type="number" min="0" step="100" placeholder="15500"><div class="actions"><button class="btn" id="saveProduct">Guardar producto</button><button class="btn secondary" id="cancelProduct" hidden>Cancelar</button></div><p class="hint">Puedes modificar el precio cuando cambie. Los pedidos guardados conservan el precio que tenían al crearse.</p></div>
+<div class="card"><input class="search" id="productSearch" placeholder="Buscar producto…"><div id="productList"></div></div>
+</section>
+
+<section class="panel" id="clientes">
+<h2>Clientes</h2>
+<div class="card"><h3 id="clientFormTitle">Agregar cliente</h3><input id="clientId" type="hidden"><label>Nombre del negocio o cliente *</label><input id="clientName" placeholder="Ej. Salsamentaria El Paisa"><label>Teléfono / WhatsApp</label><input id="clientPhone" type="tel" placeholder="300 000 0000"><label>Dirección o barrio</label><input id="clientAddress" placeholder="Dirección, barrio, ciudad"><label>Observaciones</label><textarea id="clientNotes" placeholder="Horario, persona de contacto, etc."></textarea><div class="actions"><button class="btn" id="saveClient">Guardar cliente</button><button class="btn secondary" id="cancelClient" hidden>Cancelar</button></div></div>
+<div class="card"><input class="search" id="clientSearch" placeholder="Buscar cliente…"><div id="clientList"></div></div>
+</section>
+
+<section class="panel" id="pedido">
+<h2>Nuevo pedido</h2>
+<div class="card"><label>Cliente *</label><select id="orderClient"><option value="">Selecciona un cliente</option></select><label>Fecha</label><input id="orderDate" type="date"><label>Notas del pedido</label><textarea id="orderNotes" placeholder="Entrega, forma de pago, observaciones…"></textarea></div>
+<div class="card"><h3>Productos y cantidades</h3><div id="orderProducts"></div><div class="row" style="margin-top:14px"><span>Total del pedido</span><span class="total" id="orderTotal">$0</span></div><div class="actions"><button class="btn" id="saveOrder">Guardar pedido</button><button class="btn secondary" id="clearOrder">Limpiar</button></div></div>
+<div class="card" id="receiptCard" hidden><h3>Comprobante del pedido</h3><div id="receipt" class="receipt"></div><div class="actions"><button class="btn" id="shareReceipt">Compartir comprobante</button><button class="btn secondary" id="copyReceipt">Copiar texto</button></div></div>
+</section>
+
+<section class="panel" id="historial">
+<h2>Historial de pedidos</h2><input class="search" id="orderSearch" placeholder="Buscar por cliente o número…"><div id="orderList"></div>
+</section>
+
+<section class="panel" id="ruta">
+<h2>Ruta de visitas</h2>
+<div class="card"><p class="hint">Marca los clientes que deseas visitar y ordénalos con los botones ↑ y ↓. La lista queda guardada en este teléfono.</p><input class="search" id="routeSearch" placeholder="Buscar cliente para agregar…"><div id="routeCandidates"></div></div>
+<div class="card"><div class="row"><h3>Mi recorrido</h3><span class="pill" id="routeCount">0 paradas</span></div><div id="routeList"></div><div class="actions"><button class="btn" id="openRouteMaps">Abrir primera dirección en Maps</button><button class="btn secondary" id="clearRoute">Vaciar ruta</button></div><p class="hint">La navegación requiere internet y una dirección suficientemente completa. Esta versión organiza la lista; no optimiza automáticamente el recorrido.</p></div>
+</section>
+</main>
+<script>
+const KEY='lagustosa_v1';
+const initialProducts=[
+['Salsa de tomate 4000 g',15500],['Salsa rosada 4000 g',24000],['Mayonesa 4000 g',23000],['Salsa de piña 4000 g',17000],['Salsa BBQ 4000 g',24000],['Salsa de ajo 4000 g',30500],['Salsa Tasty 4000 g',30500],['Vinagre 3000 g',5000],['Vinagre 5000 g',7000],['Humo líquido 3000 g',11000],['Salsa negra 3000 g',6500],['Salsa soya 3000 g',9000]
+].map((x,i)=>({id:'p'+(i+1),name:x[0],price:x[1],active:true}));
+let db=loadDB(), lastReceipt='';
+function loadDB(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&Array.isArray(d.products))return {...{products:[],clients:[],orders:[],route:[]},...d}}catch(e){}return {products:initialProducts,clients:[],orders:[],route:[]}}
+function saveDB(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
+function id(prefix){return prefix+'_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6)}
+function money(n){return new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(Number(n)||0)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function go(tab){document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===tab));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));if(tab==='pedido')renderOrderProducts();window.scrollTo(0,0)}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.tab));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+function renderAll(){renderProducts();renderClients();renderOrderClient();renderOrderProducts();renderOrders();renderRoute();renderStats()}
+function renderStats(){document.getElementById('statClients').textContent=db.clients.length;document.getElementById('statProducts').textContent=db.products.filter(p=>p.active).length;document.getElementById('statOrders').textContent=db.orders.length;document.getElementById('statSales').textContent=money(db.orders.reduce((s,o)=>s+o.total,0))}
+function renderProducts(){let q=(document.getElementById('productSearch')?.value||'').toLowerCase();let arr=db.products.filter(p=>p.name.toLowerCase().includes(q));document.getElementById('productList').innerHTML=arr.length?arr.map(p=>`<div class="item row"><div><div class="item-title">${esc(p.name)}</div><div class="price">${money(p.price)}</div></div><div class="actions"><button class="btn secondary small" onclick="editProduct('${p.id}')">Editar</button><button class="btn danger small" onclick="deleteProduct('${p.id}')">Eliminar</button></div></div>`).join(''):'<div class="empty">Todavía no hay productos.</div>'}
+function editProduct(pid){let p=db.products.find(x=>x.id===pid);if(!p)return;productId.value=p.id;productName.value=p.name;productPrice.value=p.price;productFormTitle.textContent='Editar producto';cancelProduct.hidden=false;go('productos');}
+function resetProduct(){productId.value='';productName.value='';productPrice.value='';productFormTitle.textContent='Agregar producto';cancelProduct.hidden=true}
+saveProduct.onclick=()=>{let name=productName.value.trim(),price=Number(productPrice.value);if(!name||!Number.isFinite(price)||price<0){alert('Escribe el nombre y un precio válido.');return}let pid=productId.value;if(pid){let p=db.products.find(x=>x.id===pid);if(p){p.name=name;p.price=price;p.active=true}}else db.products.push({id:id('p'),name,price,active:true});resetProduct();saveDB()};
+cancelProduct.onclick=resetProduct;
+function deleteProduct(pid){if(confirm('¿Eliminar este producto de la lista? Los pedidos anteriores no se borran.')){db.products=db.products.filter(p=>p.id!==pid);saveDB()}}
+productSearch.oninput=renderProducts;
+function renderClients(){let q=(clientSearch.value||'').toLowerCase();let arr=db.clients.filter(c=>(c.name+' '+c.phone+' '+c.address).toLowerCase().includes(q));clientList.innerHTML=arr.length?arr.map(c=>`<div class="item"><div class="row"><div><div class="item-title">${esc(c.name)}</div><div class="muted">${esc(c.phone||'Sin teléfono')} · ${esc(c.address||'Sin dirección')}</div></div><div class="actions"><button class="btn secondary small" onclick="editClient('${c.id}')">Editar</button><button class="btn danger small" onclick="deleteClient('${c.id}')">Borrar</button></div></div>${c.notes?`<div class="muted">${esc(c.notes)}</div>`:''}</div>`).join(''):'<div class="empty">Agrega tu primer cliente.</div>';renderOrderClient();renderRoute()}
+function editClient(cid){let c=db.clients.find(x=>x.id===cid);if(!c)return;clientId.value=c.id;clientName.value=c.name;clientPhone.value=c.phone||'';clientAddress.value=c.address||'';clientNotes.value=c.notes||'';clientFormTitle.textContent='Editar cliente';cancelClient.hidden=false;go('clientes')}
+function resetClient(){clientId.value='';clientName.value='';clientPhone.value='';clientAddress.value='';clientNotes.value='';clientFormTitle.textContent='Agregar cliente';cancelClient.hidden=true}
+saveClient.onclick=()=>{let name=clientName.value.trim();if(!name){alert('Escribe el nombre del cliente o negocio.');return}let obj={name,phone:clientPhone.value.trim(),address:clientAddress.value.trim(),notes:clientNotes.value.trim()};if(clientId.value){Object.assign(db.clients.find(c=>c.id===clientId.value),obj)}else db.clients.push({id:id('c'),...obj});resetClient();saveDB()};
+cancelClient.onclick=resetClient;clientSearch.oninput=renderClients;
+function deleteClient(cid){if(confirm('¿Borrar este cliente? Los pedidos anteriores se conservan.')){db.clients=db.clients.filter(c=>c.id!==cid);db.route=db.route.filter(x=>x!==cid);saveDB()}}
+function renderOrderClient(){let sel=orderClient,old=sel.value;sel.innerHTML='<option value="">Selecciona un cliente</option>'+db.clients.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');if(db.clients.some(c=>c.id===old))sel.value=old}
+function renderOrderProducts(){let wrap=document.getElementById('orderProducts');if(!wrap)return;let ps=db.products.filter(p=>p.active);if(!ps.length){wrap.innerHTML='<div class="empty">Primero agrega productos.</div>';return}wrap.innerHTML='<div class="lineitem muted"><span>Producto</span><span>Cant.</span><span>Precio unidad</span></div>'+ps.map(p=>`<div class="lineitem"><span class="prodname">${esc(p.name)}</span><input aria-label="Cantidad ${esc(p.name)}" type="number" min="0" step="1" value="0" data-qty="${p.id}"><input aria-label="Precio ${esc(p.name)}" type="number" min="0" step="100" value="${p.price}" data-price="${p.id}"></div>`).join('');wrap.querySelectorAll('input').forEach(x=>x.oninput=calcOrder);calcOrder()}
+function calcOrder(){let total=0;document.querySelectorAll('[data-qty]').forEach(q=>{let pid=q.dataset.qty,price=Number(document.querySelector(`[data-price="${pid}"]`)?.value)||0;total+=(Math.max(0,Number(q.value)||0)*Math.max(0,price))});orderTotal.textContent=money(total);return total}
+function resetOrder(){orderClient.value='';orderDate.value=new Date().toLocaleDateString('en-CA');orderNotes.value='';renderOrderProducts();receiptCard.hidden=true;lastReceipt=''}
+clearOrder.onclick=resetOrder;orderDate.value=new Date().toLocaleDateString('en-CA');
+saveOrder.onclick=()=>{let cid=orderClient.value;if(!cid){alert('Selecciona el cliente.');return}let client=db.clients.find(c=>c.id===cid);let items=[];document.querySelectorAll('[data-qty]').forEach(q=>{let qty=Math.floor(Number(q.value)||0),pid=q.dataset.qty,p=db.products.find(x=>x.id===pid),price=Number(document.querySelector(`[data-price="${pid}"]`).value)||0;if(qty>0&&p)items.push({productId:pid,name:p.name,qty,price,total:qty*price})});if(!items.length){alert('Indica al menos una cantidad mayor que cero.');return}let order={id:id('pedido'),number:String(db.orders.length+1).padStart(4,'0'),clientId:cid,clientName:client.name,date:orderDate.value||new Date().toLocaleDateString('en-CA'),notes:orderNotes.value.trim(),items,total:items.reduce((s,x)=>s+x.total,0),createdAt:new Date().toISOString()};db.orders.unshift(order);saveDB();lastReceipt=makeReceipt(order);receipt.textContent=lastReceipt;receiptCard.hidden=false;alert('Pedido guardado.');};
+function makeReceipt(o){return `LA GUSTOSA\nCOMPROBANTE DE PEDIDO\nPedido: ${o.number}\nFecha: ${o.date}\nCliente: ${o.clientName}\n------------------------------\n${o.items.map(i=>`${i.name}\n${i.qty} x ${money(i.price)} = ${money(i.total)}`).join('\n')}\n------------------------------\nTOTAL: ${money(o.total)}\n${o.notes?'Notas: '+o.notes+'\\n':''}\nEste comprobante resume el pedido; no es una factura electrónica DIAN.`}
+shareReceipt.onclick=async()=>{if(!lastReceipt)return;if(navigator.share){try{await navigator.share({title:'Pedido La Gustosa',text:lastReceipt})}catch(e){}}else{await navigator.clipboard?.writeText(lastReceipt);alert('Si no se abrió compartir, copia el comprobante con el botón Copiar texto.')}};
+copyReceipt.onclick=async()=>{if(!lastReceipt)return;try{await navigator.clipboard.writeText(lastReceipt);alert('Comprobante copiado.')}catch(e){prompt('Copia el comprobante:',lastReceipt)}};
+function renderOrders(){let q=(orderSearch.value||'').toLowerCase();let arr=db.orders.filter(o=>(o.clientName+' '+o.number+' '+o.date).toLowerCase().includes(q));orderList.innerHTML=arr.length?arr.map(o=>`<div class="item"><div class="row"><div><div class="item-title">Pedido #${esc(o.number)} · ${esc(o.clientName)}</div><div class="muted">${esc(o.date)} · ${o.items.length} productos</div></div><div class="price">${money(o.total)}</div></div><details><summary>Ver detalle</summary><div class="muted" style="margin:8px 0">${o.items.map(i=>`${esc(i.name)} — ${i.qty} × ${money(i.price)} = ${money(i.total)}`).join('<br>')}</div>${o.notes?`<p class="muted">${esc(o.notes)}</p>`:''}<div class="actions"><button class="btn secondary small" onclick="showOldReceipt('${o.id}')">Ver comprobante</button><button class="btn danger small" onclick="deleteOrder('${o.id}')">Eliminar pedido</button></div></details></div>`).join(''):'<div class="empty">Todavía no hay pedidos guardados.</div>'}
+function showOldReceipt(oid){let o=db.orders.find(x=>x.id===oid);if(!o)return;lastReceipt=makeReceipt(o);go('pedido');receipt.textContent=lastReceipt;receiptCard.hidden=false}
+function deleteOrder(oid){if(confirm('¿Eliminar este pedido del historial?')){db.orders=db.orders.filter(o=>o.id!==oid);saveDB()}}
+orderSearch.oninput=renderOrders;
+function renderRoute(){if(!routeCandidates)return;let q=(routeSearch.value||'').toLowerCase();let candidates=db.clients.filter(c=>!db.route.includes(c.id)&&(c.name+' '+c.address).toLowerCase().includes(q));routeCandidates.innerHTML=candidates.length?candidates.map(c=>`<div class="item row"><div><div class="item-title">${esc(c.name)}</div><div class="muted">${esc(c.address||'Sin dirección')}</div></div><button class="btn small" onclick="addRoute('${c.id}')">Agregar</button></div>`).join(''):'<div class="empty">No hay más clientes para agregar.</div>';routeCount.textContent=db.route.length+' paradas';routeList.innerHTML=db.route.length?db.route.map((cid,i)=>{let c=db.clients.find(x=>x.id===cid);if(!c)return '';return `<div class="item row"><div><span class="pill">${i+1}</span> <strong>${esc(c.name)}</strong><div class="muted">${esc(c.address||'Sin dirección')} ${c.phone?'· '+esc(c.phone):''}</div></div><div class="actions"><button class="btn secondary small" onclick="moveRoute(${i},-1)" ${i===0?'disabled':''}>↑</button><button class="btn secondary small" onclick="moveRoute(${i},1)" ${i===db.route.length-1?'disabled':''}>↓</button><button class="btn secondary small" onclick="openAddress('${c.id}')">Mapa</button><button class="btn danger small" onclick="removeRoute('${c.id}')">×</button></div></div>`}).join(''):'<div class="empty">Agrega clientes para organizar tu recorrido.</div>'}
+function addRoute(cid){db.route.push(cid);saveDB()}function moveRoute(i,d){let j=i+d;if(j<0||j>=db.route.length)return;[db.route[i],db.route[j]]=[db.route[j],db.route[i]];saveDB()}function removeRoute(cid){db.route=db.route.filter(x=>x!==cid);saveDB()}function openAddress(cid){let c=db.clients.find(x=>x.id===cid);if(c?.address)window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(c.address),'_blank');else alert('Agrega la dirección del cliente primero.')}
+routeSearch.oninput=renderRoute;clearRoute.onclick=()=>{if(confirm('¿Vaciar la ruta de visitas?')){db.route=[];saveDB()}};openRouteMaps.onclick=()=>{let c=db.clients.find(x=>x.id===db.route[0]);if(!c){alert('Agrega clientes a la ruta.');return}openAddress(c.id)};
+exportBtn.onclick=()=>{let blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='LaGustosa-copia-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href)};
+importFile.onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let d=JSON.parse(await f.text());if(!d.products||!d.clients||!d.orders)throw Error();if(confirm('Esto reemplazará los datos actuales por la copia seleccionada. ¿Continuar?')){db={products:d.products,clients:d.clients,orders:d.orders,route:d.route||[]};saveDB();alert('Copia restaurada.')}}catch(err){alert('El archivo no parece una copia válida de La Gustosa.')}e.target.value=''};
+renderAll();
+</script>
+<script>
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
+}
+</script>
+</body>
+</html>

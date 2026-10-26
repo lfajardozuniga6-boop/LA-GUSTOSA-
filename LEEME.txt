@@ -1,0 +1,20 @@
+LA GUSTOSA — paquete para publicar e instalar como aplicación web (PWA)
+
+Archivos:
+- index.html: la aplicación.
+- manifest.webmanifest: nombre, icono y configuración de instalación.
+- service-worker.js: caché para abrir la app sin conexión después de cargarla al menos una vez.
+- icon-192.png y icon-512.png: iconos.
+
+PASOS:
+1. Publica TODO el contenido de esta carpeta en un hosting HTTPS (por ejemplo, GitHub Pages o un servicio de hosting estático).
+2. Abre la URL HTTPS publicada en Google Chrome en Android.
+3. Menú ⋮ > Instalar aplicación (o Añadir a pantalla de inicio > Instalar).
+4. Abre La Gustosa una vez con internet antes de usarla sin conexión.
+
+IMPORTANTE:
+- Este paquete no es APK y no se instala directamente desde ZIP.
+- La publicación debe servir los archivos de esta carpeta en la raíz de la URL.
+- Los datos de pedidos/clientes se guardan en el almacenamiento local del navegador de ese teléfono. Usa Copia de seguridad dentro de la app. Borrar datos del navegador puede borrar la información.
+- La función de comprobante genera un resumen de pedido, no una factura electrónica DIAN.
+- Las direcciones deben estar completas para abrirlas en Maps; la ruta es una lista ordenable, no una optimización automática.
